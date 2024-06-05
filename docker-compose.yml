@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  # Service MySQL
+  mysql:
+    image: mysql:5.7
+    ports:
+      - "3307:3306"  # Mappage du port 3307 externe sur le port 3306 interne de MySQL
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./sql/app.sql:/docker-entrypoint-initdb.d/app.sql  # Spécifie le chemin complet du fichier app.sql
+      - ./sql/data.sql:/docker-entrypoint-initdb.d/data.sql  # Spécifie le chemin complet du fichier data.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: petflix
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Service PhpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8888:80"  # Mappage du port 8080 externe sur le port 80 interne de PhpMyAdmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: root
+    depends_on:
+      - mysql
+
+volumes:
+  db-data:
